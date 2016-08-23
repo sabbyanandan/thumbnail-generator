@@ -14,12 +14,38 @@ file-path is expected in an environment property and the name of the property is
 - By default, the generated thumbnails land at `/data/thumbnails` folder. This needs to be more 
 dynamic, but it is not supported yet. 
 
+== Build Project
+
+```
+mvn clean install
+``` 
+
 == Sample: Spring Cloud Data Flow 
 
+. Local build of link:https://github.com/sabbyanandan/thumbnail-generator[Thumbnail Generator] 
+. Local build of link:https://github.com/spring-cloud/spring-cloud-dataflow[Spring Cloud Data Flow]
+. Local instance of Kafka
+. Register link:https://github.com/spring-cloud/spring-cloud-task/tree/master/spring-cloud-task-samples/taskprocessor[task-processor] 
+and link:https://github.com/spring-cloud/spring-cloud-stream-app-starters/tree/master/tasklauncher[task-launcher-local]
+ applications
+
++
 [source]
 -----
-stream create foo --definition "file --filename-pattern=*.jpg --directory=/data --mode=ref --spring.cloud.stream.bindings.output.contentType='text/plain' | task-processor --uri=maven://com.example:thumbnail-generator:0.0.1-SNAPSHOT | task-launcher-local " --deploy
------
+dataflow:>app register --name task-processor --type processor --uri maven://io.spring.cloud:taskprocessor:jar:1.1.0.BUILD-SNAPSHOT
 
-- For troubleshooting, add `--logging.level.org.springframework.integration=DEBUG` to the any of the
-applications in stream definition.
+dataflow:>app register --name task-launcher-local --type sink --uri maven://org.springframework.cloud.stream.app:task-launcher-local-sink-kafka:jar:1.0.2.RELEASE
+-----
++
+
+. Create and deploy the following stream:
+
++
+[source]
+-----
+dataflow:>stream create foo --definition "file --filename-pattern=*.jpg --directory=/data --mode=ref --spring.cloud.stream.bindings.output.contentType='text/plain' | task-processor --uri=maven://com.example:thumbnail-generator:0.0.1-SNAPSHOT | task-launcher-local" --deploy
+-----
++
+
+. For troubleshooting, you can add `--logging.level.org.springframework.integration=DEBUG` to any 
+of the applications in stream definition.
