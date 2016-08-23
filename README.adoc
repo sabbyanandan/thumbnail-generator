@@ -1,0 +1,25 @@
+= Spring Cloud Task Sample: Thumbnail Generator
+
+A Spring Cloud Task sample application that generates thumbnail for the images received from an upstream 
+application such as the `file-source` or `s3-source`. 
+
+== Notes
+
+- This application uses link:https://github.com/coobird/thumbnailator[Thumbnailator] library to 
+generate the thumbnails.
+
+- This application expects absolute path to the image files to generate the thumbnails. The 
+file-path is expected in an environment property and the name of the property is `payload`.
+
+- By default, the generated thumbnails land at `/data/thumbnails` folder. This needs to be more 
+dynamic, but it is not supported yet. 
+
+== Sample: Spring Cloud Data Flow 
+
+[source]
+-----
+stream create foo --definition "file --filename-pattern=*.jpg --directory=/data --mode=ref --spring.cloud.stream.bindings.output.contentType='text/plain' | task-processor --uri=maven://com.example:thumbnail-generator:0.0.1-SNAPSHOT | task-launcher-local " --deploy
+-----
+
+- For troubleshooting, add `--logging.level.org.springframework.integration=DEBUG` to the any of the
+applications in stream definition.
